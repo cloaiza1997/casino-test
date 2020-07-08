@@ -6,12 +6,13 @@ import GlobalState from "./config/GlobalState";
 import Router from "./router/Router";
 
 import Roulette from "./Roulette";
+import Users from "./Users";
 
 setGlobal(GlobalState);
 
 ReactDOM.render(
   <React.StrictMode>
-    <Roulette />
+    <Users />
   </React.StrictMode>,
   document.getElementById('app')
 );

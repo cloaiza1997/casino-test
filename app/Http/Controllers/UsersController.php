@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Usuarios;
 
-class RouleteController extends Controller
+class UsersController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -13,7 +14,11 @@ class RouleteController extends Controller
      */
     public function index()
     {
-        //
+        $users = Usuarios::all();
+
+        return response()->json([
+            "users" => $users
+        ], 200);
     }
 
     /**
@@ -23,7 +28,7 @@ class RouleteController extends Controller
      */
     public function create()
     {
-        //
+
     }
 
     /**
@@ -34,7 +39,15 @@ class RouleteController extends Controller
      */
     public function store(Request $request)
     {
-        //
+
+        $user = new Usuarios();
+        $user->nombre = $request["nombre"];
+        $user->dinero = 10000;
+        $success = $user->save();
+
+        return response()->json([
+            "success" => $success
+        ], 200);
     }
 
     /**
@@ -68,7 +81,14 @@ class RouleteController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $user = Usuarios::find($id);
+        $user->nombre = $request["nombre"];
+        $user->dinero = $request["dinero"];
+        $success = $user->save();
+
+        return response()->json([
+            "success" => $success
+        ], 200);
     }
 
     /**
@@ -79,6 +99,11 @@ class RouleteController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $user = Usuarios::find($id);
+        $success = $user->delete();
+
+        return response()->json([
+            "success" => $success
+        ], 200);
     }
 }
