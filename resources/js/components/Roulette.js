@@ -12,8 +12,41 @@ export default function Roulette(){
   const [ title_winner, setTitleWinner ] = useState("");
 
   useEffect(() => {
-    // createRoulette();
+    // Inicia todo el juego
+    getPlayers();
   }, []);
+
+  /**
+   * Obtiene las apuestas de los jugadores
+   */
+  const getPlayers = () => {
+    timer("0h3m0s"); // Inicializa el tiempo
+    setDisabled(true);
+    setPlayers([]);
+    setTitleWinner("Genenando Apuesta ...");
+    // Consulta los usuarios y genera un listado de apuestas
+    axios.get(globalState.url + "bet").
+    then(res => {
+      let players = res.data.players;
+      // Ordena los jugadores por el número seleccionado
+      players.sort(function (a, b) {
+        return a.numero - b.numero;
+      });
+
+      setPlayers(players);
+      // Si no hay jugadores actualiza hasta encontrar apostadores
+      if(players.length == 0) {
+        setDisabled(false);
+        setTitleWinner("No hay jugadores. Actualizando en 10 segundos ...");
+        timer("0h0m10s");
+      } else {
+        setBet(true);
+        setTitleWinner("");
+        // Crea e inicia la ruleta
+        createRoulette(players);
+      }
+    });
+  }
   /**
    * Genera una ruleta aleatoria
    */
@@ -31,7 +64,6 @@ export default function Roulette(){
                 'textFillStyle': "white"
             });
         });
-        console.log("wheel", players);
         let wheel = new Winwheel({
             'canvasId': 'canvas_roulette',
             'outerRadius': 170,
@@ -45,16 +77,40 @@ export default function Roulette(){
             'textAligment': 'outer',
             'animation': {
                 'type': 'spinToStop',
-                'duration': 1,
-                'callbackFinished': () => message(wheel, players), // Después de terminar de girar
+                'duration': 60,
+                'callbackFinished': () => getResults(wheel, players), // Después de terminar de girar
                 'callbackAfter': () => drawIndicator(wheel), // Cada giro que hace
-                'spins': 20
+                'spins': 100
             }
         });
-        drawIndicator(wheel);
+        drawIndicator(wheel); // Selector que muestra el número seleccionado
         setWheel(wheel);
+        // Se inicia la ruleta
+        wheel.startAnimation();
     });
   }
+  /**
+   * Muestra el aviso del número ganador cuando la ruleta termina de girar
+   * @param {*} wheel Objeto de la ruleta
+   */
+  const getResults = (wheel, players) => {
+      // Obtiene el número seleccionado
+      let selected = wheel.getIndicatedSegment();
+      // Consulta los usuarios ganadores
+      setWinners(players, selected);
+      // Reinicia la ruleta
+      wheel.stopAnimation(false);
+      // wheel.rotationAngle = 0;
+      wheel.draw();
+      drawIndicator(wheel);
+      setBet(false);
+      setDisabled(false);
+  }
+  /**
+   * Valida qué usuarios han sido ganadores
+   * @param {*} players Listado de todos los jugadores
+   * @param {*} selected Objeto del item seleccionado de la ruleta
+   */
   const setWinners = async (players, selected) => {
 
     let number = selected.text; // Número ganador
@@ -66,52 +122,31 @@ export default function Roulette(){
       let winner = false; 
       // Se valida si el jugador acertó en el número
       if(player.numero == number) {
-
         let ganancia = 0;
-
+        // Establecer ganancia
+        // + Verde: 15 veces lo apostado | - El doble de lo apostado
         if(color == "Verde") {
           ganancia = player.apuesta * 15;
         } else {
           ganancia = player.apuesta * 2;
         }
-
         player.ganancia = ganancia;
-
+        // Se agrega al objeto de ganadores
         winners.push(player);
         winner = true;
         count++;
       }
-      
       player.ganador = winner;
     });
-
+    // Se actualiza en la base de datos en base al listado de ganadores
     await axios.post(globalState.url + "setWinners", winners);
-
     // Se limpia la tabla y actualiza
     setPlayers([]);
     setPlayers(players);
     // Mensaje de confirmación
     let message = "• Ha ganado el " + number + " " + color + "\n• Número de Ganadores: " + count;
-
+    // Se cambia el título
     setTitleWinner(message);
-    alert(message);
-  }
-  /**
-   * Muestra el aviso del número ganador
-   * @param {*} wheel Objeto de la ruleta
-   */
-  const message = (wheel, players) => {
-    // Obtiene el número seleccionado
-    let selected = wheel.getIndicatedSegment();
-
-    setWinners(players, selected);
-    // Reinicia la ruleta
-    wheel.stopAnimation(false);
-    // wheel.rotationAngle = 0;
-    wheel.draw();
-    drawIndicator(wheel);
-    setBet(false);
-    setDisabled(false);
   }
   /**
    * Dibuja el indicador sobre la ruleta
@@ -131,47 +166,51 @@ export default function Roulette(){
     ctx.fill();
   }
   /**
-   * Obtiene las apuestas de los jugadores
+   * Ejecuta e inicia la ruleta
    */
-  const getPlayers = () => {
-    setDisabled(true);
-    setPlayers([]);
-    setTitleWinner("Genenando Apuesta ...");
-    axios.get(globalState.url + "bet").
-    then(res => {
-      let players = res.data.players;
-      setPlayers(players);
-      
-      if(players.length == 0) {
-          setDisabled(false);
-          setTitleWinner("No hay jugadores");
-        } else {
-          setBet(true);
-          setTitleWinner("");
-        }
-        
-        createRoulette(players);
-    });
-  }
-
-  const startRoulette = () => {
-    if(bet) {
-      wheel.startAnimation();
+  const startRouletteManual = () => {
+    if (bet) {
+        wheel.startAnimation();
     } else {
-      alert("Realicen sus apuestas");
+        setTitleWinner("Realicen sus apuestas");
     }
   }
-
+  /**
+   * Conteo regresivo
+   * @param {*} time 
+   */
+  const timer = (time) => {
+      $("#timer").timer('remove');
+      $("#timer").timer({
+          countdown: true,
+          duration: time, // Puede ser en formato 0h0m0s o en segundos
+          callback: function () {
+            location.reload();
+          },
+          format: '%M:%S'
+      });
+  }
 
   return(
     <div>
       <button onClick={ () => globalState.func.changeView("users") }>Usuarios</button>
+      <h1>Próximo juego en: <span id="timer"></span></h1>
       <div>
         <h1 style={{ margin: 0 }}>{ title_winner }</h1>
       </div>
-      <div style={{ display: "flex" }}>
+      <div style={{ display: "flex" }} className="roulette">
         <div style={{ width: "50%" }}>
-          <h4>Jugadores <button onClick={ getPlayers } style={ { display: (disabled ? "none" : "initial") } }>Realizar apuesta</button></h4>
+          <h4>Ruleta 
+            {/* <button onClick={ startRouletteManual }>Girar</button> */}
+          </h4>
+          <div>
+            <canvas id="canvas_roulette" height="400" width="400"></canvas>
+          </div>
+        </div>
+        <div style={{ width: "50%" }}>
+          <h4>Jugadores 
+            {/* <button onClick={ getPlayers } style={ { display: (disabled ? "none" : "initial") } }>Realizar apuesta</button> */}
+          </h4>
           <table>
             <thead>
               <tr>
@@ -200,12 +239,6 @@ export default function Roulette(){
               }
             </tbody>
           </table>
-        </div>
-        <div style={{ width: "50%" }}>
-          <h4>Ruleta <button onClick={ startRoulette }>Girar</button></h4>
-          <div>
-            <canvas id="canvas_roulette" height="400" width="400"></canvas>
-          </div>
         </div>
       </div>
     </div>

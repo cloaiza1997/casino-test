@@ -93,9 +93,12 @@ class RouletteController extends Controller
         return $result;
     }
 
+    /**
+     * Almacena en la base de datos a los ganadores
+     */
     public function setWinners(Request $request) {
         $winners = $request->all();
-
+        // Recorre el arreglo de ganadores para actualizar su dinero en la base de datos
         foreach($winners as $winner) {
             $obj_winner = Usuarios::find($winner["id"]);
             

@@ -9,11 +9,25 @@
         <!-- Fonts -->
         <link href="https://fonts.googleapis.com/css?family=Nunito:200,600" rel="stylesheet">
 
+        <style>
+
+            .roulette {
+                text-align: center;
+            }
+
+            @media(max-width: 800px) {
+                .roulette {
+                    flex-direction: column;
+                }
+            }
+        </style>
+
     </head>
     <body>
         <div id="app"></div>
-        <script src="./js/jquery-3.5.1.min.js"></script>
         <script src="./js/app.js"></script>
+        <script src="./js/jquery-3.5.1.min.js"></script>
+        <script src="./js/timer.jquery.min.js"></script>
         <script src="./js/TweenMax.min.js"></script>
         <script src="./js/Winwheel.min.js"></script>
     </body>
