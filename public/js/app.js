@@ -71661,7 +71661,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 Object(reactn__WEBPACK_IMPORTED_MODULE_1__["setGlobal"])(_config_GlobalState__WEBPACK_IMPORTED_MODULE_4__["default"]);
-react_dom__WEBPACK_IMPORTED_MODULE_2___default.a.render( /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.StrictMode, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_Users__WEBPACK_IMPORTED_MODULE_7__["default"], null)), document.getElementById('app'));
+react_dom__WEBPACK_IMPORTED_MODULE_2___default.a.render( /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.StrictMode, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_Roulette__WEBPACK_IMPORTED_MODULE_6__["default"], null)), document.getElementById('app'));
 
 /***/ }),
 
@@ -71701,15 +71701,119 @@ function Roulette() {
       _useGlobal2 = _slicedToArray(_useGlobal, 1),
       globalState = _useGlobal2[0];
 
+  var _useState = Object(reactn__WEBPACK_IMPORTED_MODULE_2__["useState"])([]),
+      _useState2 = _slicedToArray(_useState, 2),
+      roulette = _useState2[0],
+      setRoulette = _useState2[1];
+
+  var _useState3 = Object(reactn__WEBPACK_IMPORTED_MODULE_2__["useState"])(),
+      _useState4 = _slicedToArray(_useState3, 2),
+      wheel = _useState4[0],
+      setWheel = _useState4[1];
+
   var getBet = function getBet() {
-    axios__WEBPACK_IMPORTED_MODULE_1___default.a.get(globalState.url + "bet");
+    axios__WEBPACK_IMPORTED_MODULE_1___default.a.get(globalState.url + "bet").then(function (res) {
+      setRoulette(res.data.roulette);
+    });
+  };
+
+  Object(reactn__WEBPACK_IMPORTED_MODULE_2__["useEffect"])(function () {
+    // Genera una ruleta aleatoria
+    axios__WEBPACK_IMPORTED_MODULE_1___default.a.get(globalState.url + "getRoulette").then(function (res) {
+      // Se extrae la ruleta
+      var roulette = res.data.roulette;
+      var segments = []; // Se recorren los números de la ruleta para extraer el número y el color para agregar al arreglo de objetos del segmento
+
+      roulette.map(function (color) {
+        segments.push({
+          'fillStyle': color[1],
+          'text': color[0] + "",
+          'textFillStyle': "white"
+        });
+      });
+      var wheel = new Winwheel({
+        'canvasId': 'canvas_roulette',
+        'outerRadius': 170,
+        'innerRadius': 120,
+        'numSegments': segments.length,
+        // Cantidad de elementos de la ruleta
+        'segments': segments,
+        // Elementos de la ruleta
+        'lineWidth': 1,
+        'textFontFamily': 'Verdana',
+        'textFontSize': 16,
+        'textOrientation': 'curved',
+        // Ordenar el texto que esté en dirección del suelo
+        'textAligment': 'outer',
+        'animation': {
+          'type': 'spinToStop',
+          'duration': 1,
+          'callbackFinished': function callbackFinished() {
+            return message(wheel);
+          },
+          // Después de terminar de girar
+          'callbackAfter': function callbackAfter() {
+            return drawIndicator(wheel);
+          },
+          // Cada giro que hace
+          'spins': 20
+        }
+      });
+      drawIndicator(wheel);
+      setWheel(wheel);
+    });
+  }, []);
+  /**
+   * Muestra el aviso del número ganador
+   * @param {*} wheel Objeto de la ruleta
+   */
+
+  var message = function message(wheel) {
+    // Obtiene el número seleccionado
+    var selected = wheel.getIndicatedSegment(); // Valida el color
+
+    var color = selected.fillStyle == "red" ? "Rojo" : selected.fillStyle == "black" ? "Negro" : "Verde"; // Avisa
+
+    alert("Ha ganado el " + selected.text + " " + color); // Reinicia la ruleta
+
+    wheel.stopAnimation(false);
+    wheel.rotationAngle = 0;
+    wheel.draw();
+    drawIndicator(wheel);
+  };
+  /**
+   * Dibuja el indicador sobre la ruleta
+   * @param {*} wheel Objeto de la ruleta
+   */
+
+
+  var drawIndicator = function drawIndicator(wheel) {
+    var ctx = wheel.ctx;
+    ctx.strokeStyle = 'navy';
+    ctx.fillStyle = 'yellow';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(170, 0);
+    ctx.lineTo(230, 0);
+    ctx.lineTo(200, 40);
+    ctx.lineTo(171, 0);
+    ctx.stroke();
+    ctx.fill();
   };
 
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("button", {
     onClick: function onClick() {
       return globalState.func.changeView("home");
     }
-  }, "Regresar"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h2", null, "Ruleta"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("button", null, "Realizar apuesta"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h4", null, "Jugadores"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("button", {
+  }, "Regresar"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h4", null, "Ruleta"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("button", {
+    onClick: function onClick() {
+      return wheel.startAnimation();
+    }
+  }, "Girar"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("canvas", {
+    id: "canvas_roulette",
+    height: "400",
+    width: "400"
+  }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h4", null, "Jugadores"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("button", {
     onClick: getBet
   }, "Realizar apuesta")));
 }

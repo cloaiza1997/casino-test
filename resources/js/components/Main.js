@@ -12,7 +12,7 @@ setGlobal(GlobalState);
 
 ReactDOM.render(
   <React.StrictMode>
-    <Users />
+    <Roulette />
   </React.StrictMode>,
   document.getElementById('app')
 );

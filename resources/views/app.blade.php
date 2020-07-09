@@ -12,6 +12,9 @@
     </head>
     <body>
         <div id="app"></div>
+        <script src="./js/jquery-3.5.1.min.js"></script>
         <script src="./js/app.js"></script>
+        <script src="./js/TweenMax.min.js"></script>
+        <script src="./js/Winwheel.min.js"></script>
     </body>
 </html>

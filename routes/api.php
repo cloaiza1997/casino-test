@@ -21,3 +21,4 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::resource('user', 'UsersController');
 
 Route::get('bet', 'RouletteController@getBet');
+Route::get('getRoulette', 'RouletteController@getRoulette');
