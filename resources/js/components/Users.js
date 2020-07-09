@@ -104,7 +104,7 @@ export default function Users(){
 
   return(
     <div>
-      <button onClick={ () => globalState.func.changeView("home") }>Regresar</button>
+      <button onClick={ () => globalState.func.changeView("roulette") }>Regresar</button>
       <h2>Usuarios</h2>
       <div>
         <form hidden={ !create }>
@@ -117,6 +117,7 @@ export default function Users(){
           <h3>Editar Usuario</h3>
           <label>Nombre</label>
           <input type="text" value={name} onChange={ e => setName(e.target.value)}/>
+          <br/>
           <label>Dinero</label>
           <input type="number" value={money} onChange={ e => setMoney(parseInt(e.target.value))}/>
           <br/>

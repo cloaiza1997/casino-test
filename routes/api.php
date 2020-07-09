@@ -22,3 +22,4 @@ Route::resource('user', 'UsersController');
 
 Route::get('bet', 'RouletteController@getBet');
 Route::get('getRoulette', 'RouletteController@getRoulette');
+Route::post('setWinners', 'RouletteController@setWinners');

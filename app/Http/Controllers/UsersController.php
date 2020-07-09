@@ -28,7 +28,12 @@ class UsersController extends Controller
      */
     public function create()
     {
-
+        for ($i=0; $i < 20; $i++) { 
+            $obj_user = new Usuarios();
+            $obj_user->nombre = "Usuario {$i}";
+            $obj_user->dinero = 10000;
+            $obj_user->save();
+        }
     }
 
     /**
@@ -100,7 +105,7 @@ class UsersController extends Controller
     public function destroy($id)
     {
         $user = Usuarios::find($id);
-        $success = $user->delete();
+        $success = $user ? $user->delete() : true;
 
         return response()->json([
             "success" => $success

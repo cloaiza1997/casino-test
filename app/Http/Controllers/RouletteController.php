@@ -61,11 +61,22 @@ class RouletteController extends Controller
             // Actualiza el dinero ya que el usuario ha apostado
             $user->dinero -= $bet; 
             $user->save();
+            // Obtiene un número aleatorio de la ruleta
+            $func = function () {
+                return random_int(0, 37);
+            };
+            // Genera el número de la apuesta
+            $user->numero = $this->cicle(10, $func);
+            // Obtiene el color relacionado al número seleccionado
+            $user->color = ($user->numero % 2 != 0) ? "red" : (($user->numero == 0) ? "green" : "black");
 
-            $user->percent = $percent; // porcentaje a apostar
-            $user->apuesta = $bet; // Dinero a apostar
+            $user->porcentaje = $percent; // porcentaje a apostar
+            $user->apuesta = round($bet, 2); // Dinero a apostar
         }
-        dd($users);
+        
+        return response()->json([
+            "players" => $users,
+        ], 200);
     }
 
     /**
@@ -80,5 +91,18 @@ class RouletteController extends Controller
         }
 
         return $result;
+    }
+
+    public function setWinners(Request $request) {
+        $winners = $request->all();
+
+        foreach($winners as $winner) {
+            $obj_winner = Usuarios::find($winner["id"]);
+            
+            if($obj_winner) {
+                $obj_winner->dinero += $winner["ganancia"];
+                $obj_winner->save();
+            }     
+        }
     }
 }
